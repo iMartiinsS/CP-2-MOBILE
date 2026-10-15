@@ -320,13 +320,25 @@ class _HomePageState extends State<HomePage> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const Spacer(),
-                  const Icon(Icons.swipe_left,
-                      size: 16, color: corTextoSecundario),
-                  const SizedBox(width: 4),
-                  const Text(
-                    'deslize para saída ou excluir',
-                    style: TextStyle(fontSize: 11, color: corTextoSecundario),
+                  const SizedBox(width: 12),
+                  // dica de como usar o Slidable (encolhe se faltar espaço)
+                  const Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Icon(Icons.swipe_left,
+                            size: 16, color: corTextoSecundario),
+                        SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            'deslize para saída ou excluir',
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontSize: 11, color: corTextoSecundario),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
