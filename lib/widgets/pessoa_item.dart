@@ -34,6 +34,7 @@ class PessoaItem extends StatelessWidget {
       child: Slidable(
         endActionPane: ActionPane(
           motion: const DrawerMotion(),
+          extentRatio: 0.62, // largura das ações, pra caber o texto EXCLUIR
           children: [
             SlidableAction(
               onPressed: (context) {

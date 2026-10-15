@@ -277,7 +277,7 @@ class _HomePageState extends State<HomePage> {
               Row(
                 children: [
                   Expanded(
-                    flex: 3,
+                    flex: 1,
                     child: TextField(
                       controller: nomeController,
                       textCapitalization: TextCapitalization.words,
@@ -289,7 +289,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    flex: 2,
+                    flex: 1,
                     child: TextField(
                       controller: idController,
                       decoration: const InputDecoration(
