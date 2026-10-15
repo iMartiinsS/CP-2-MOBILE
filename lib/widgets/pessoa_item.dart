@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../models/pessoa.dart';
 
 // Cada pessoa da lista. Ele só mostra os dados e chama as funções que a
@@ -17,12 +18,21 @@ class PessoaItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final formato = DateFormat('dd/MM/yyyy HH:mm', 'pt_BR');
+
+    // a saída só aparece depois que a pessoa sai
+    String saida = '';
+    if (pessoa.dataSaida != null) {
+      saida = '\nSaída: ${formato.format(pessoa.dataSaida!)}';
+    }
+
     return Card(
       child: ListTile(
         title: Text(pessoa.nome),
         subtitle: Text(
           'ID: ${pessoa.identificacao}\n'
-          'Entrada: ${pessoa.dataEntrada}\n'
+          'Entrada: ${formato.format(pessoa.dataEntrada)}'
+          '$saida\n'
           'Situação: ${pessoa.situacao}',
         ),
         isThreeLine: true,
