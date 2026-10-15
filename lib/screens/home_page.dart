@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/ambiente.dart';
 import '../models/pessoa.dart';
+import '../widgets/pessoa_item.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -44,6 +45,18 @@ class _HomePageState extends State<HomePage> {
 
     nomeController.clear();
     idController.clear();
+  }
+
+  void registrarSaida(Pessoa pessoa) {
+    setState(() {
+      pessoa.dataSaida = DateTime.now();
+    });
+  }
+
+  void excluirPessoa(Pessoa pessoa) {
+    setState(() {
+      pessoas.remove(pessoa);
+    });
   }
 
   @override
@@ -130,15 +143,12 @@ class _HomePageState extends State<HomePage> {
                   itemCount: pessoas.length,
                   itemBuilder: (context, index) {
                     final pessoa = pessoas[index];
-                    return Card(
-                      child: ListTile(
-                        title: Text(pessoa.nome),
-                        subtitle: Text(
-                          'ID: ${pessoa.identificacao}\n'
-                          'Entrada: ${pessoa.dataEntrada}',
-                        ),
-                        trailing: Text(pessoa.situacao),
-                      ),
+                    // passa a pessoa e as funções pro PessoaItem
+                    return PessoaItem(
+                      key: ObjectKey(pessoa),
+                      pessoa: pessoa,
+                      onSaida: () => registrarSaida(pessoa),
+                      onExcluir: () => excluirPessoa(pessoa),
                     );
                   },
                 ),
