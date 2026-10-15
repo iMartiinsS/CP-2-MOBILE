@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../cores.dart';
 import '../models/ambiente.dart';
 import '../models/pessoa.dart';
 import '../widgets/pessoa_item.dart';
@@ -31,11 +32,17 @@ class _HomePageState extends State<HomePage> {
     cinema.pessoas = pessoas.where((p) => p.noAmbiente).length;
   }
 
-  // mostra um SnackBar embaixo da tela
-  void mostrarMensagem(String texto) {
+  // mostra um SnackBar embaixo da tela (vermelho quando é erro)
+  void mostrarMensagem(String texto, {bool erro = false}) {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(texto)),
+      SnackBar(
+        content: Text(
+          texto,
+          style: TextStyle(color: erro ? corTexto : corFundo),
+        ),
+        backgroundColor: erro ? corVermelhoEscuro : corTexto,
+      ),
     );
   }
 
@@ -45,14 +52,16 @@ class _HomePageState extends State<HomePage> {
 
     // regra 3: nome e ID não podem ficar vazios
     if (nome.isEmpty || identificacao.isEmpty) {
-      mostrarMensagem('Preencha o nome e a identificação.');
+      mostrarMensagem('Preencha o nome e a identificação.', erro: true);
       return;
     }
 
     // regra 1: se estiver lotado, não deixa cadastrar
     if (cinema.lotado) {
       mostrarMensagem(
-          'Ambiente lotado! Não é possível registrar uma nova entrada.');
+        'Ambiente lotado! Não é possível registrar uma nova entrada.',
+        erro: true,
+      );
       return;
     }
 
@@ -63,8 +72,10 @@ class _HomePageState extends State<HomePage> {
         p.noAmbiente &&
         p.identificacao.toLowerCase() == identificacao.toLowerCase());
     if (idJaNoAmbiente) {
-      mostrarMensagem('Já existe alguém no ambiente com a identificação '
-          '$identificacao.');
+      mostrarMensagem(
+        'Já existe alguém no ambiente com a identificação $identificacao.',
+        erro: true,
+      );
       return;
     }
 
@@ -89,16 +100,23 @@ class _HomePageState extends State<HomePage> {
     final resposta = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: corCartao,
         title: Text(titulo),
         content: Text(mensagem),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('CANCELAR'),
+            child: const Text(
+              'CANCELAR',
+              style: TextStyle(color: corTextoSecundario),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('CONFIRMAR'),
+            child: const Text(
+              'CONFIRMAR',
+              style: TextStyle(color: corVermelhoClaro),
+            ),
           ),
         ],
       ),
@@ -109,7 +127,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> registrarSaida(Pessoa pessoa) async {
     // regra 2: quem já saiu não pode sair de novo
     if (!pessoa.noAmbiente) {
-      mostrarMensagem('${pessoa.nome} já saiu do ambiente.');
+      mostrarMensagem('${pessoa.nome} já saiu do ambiente.', erro: true);
       return;
     }
 
@@ -140,59 +158,132 @@ class _HomePageState extends State<HomePage> {
     mostrarMensagem('${pessoa.nome} foi excluído(a) da lista.');
   }
 
+  // cor do contador muda conforme a lotação
+  Color get corLotacao {
+    if (cinema.lotado) return corVermelhoClaro;
+    if (cinema.quaseCheio) return corAlerta;
+    return corTexto;
+  }
+
+  IconData get iconeLotacao {
+    if (cinema.lotado) return Icons.block;
+    if (cinema.quaseCheio) return Icons.warning_amber_rounded;
+    return Icons.check_circle_outline;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Controle de Lotação - Cinema'),
+        title: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.local_movies, color: corVermelhoClaro),
+            SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                'Controle de Lotação - Cinema',
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
           child: Column(
             children: [
-              // resumo da lotação
-              Row(
-                children: [
-                  Image.asset(
-                    'assets/images/cinema.png',
-                    height: 80,
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              // cartão com a lotação do cinema
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: corCartao,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  children: [
+                    Row(
                       children: [
-                        const Text(
-                          'Pessoas no local',
-                          style: TextStyle(fontSize: 14),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.asset(
+                            'assets/images/cinema.png',
+                            width: 112,
+                            height: 70,
+                            fit: BoxFit.cover,
+                          ),
                         ),
-                        Text(
-                          '${cinema.pessoas} / ${cinema.capacidadeMaxima}',
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          cinema.getMensagem(),
-                          style:
-                              const TextStyle(fontSize: 14, color: Colors.red),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Pessoas no ambiente',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: corTextoSecundario,
+                                ),
+                              ),
+                              Text(
+                                '${cinema.pessoas} / ${cinema.capacidadeMaxima}',
+                                style: TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                  color: corLotacao,
+                                  height: 1.2,
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  Icon(iconeLotacao,
+                                      size: 16, color: corLotacao),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      cinema.getMensagem(),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: corLotacao,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 12),
+                    // barra de ocupação
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: LinearProgressIndicator(
+                        value: cinema.pessoas / cinema.capacidadeMaxima,
+                        minHeight: 8,
+                        backgroundColor: corFundo,
+                        color: corLotacao == corTexto
+                            ? corVermelho
+                            : corLotacao,
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 16),
-              // cadastro
+              // cadastro de pessoa
               Row(
                 children: [
                   Expanded(
                     flex: 3,
                     child: TextField(
                       controller: nomeController,
+                      textCapitalization: TextCapitalization.words,
                       decoration: const InputDecoration(
                         labelText: 'Nome',
-                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.person_outline),
                       ),
                     ),
                   ),
@@ -203,7 +294,7 @@ class _HomePageState extends State<HomePage> {
                       controller: idController,
                       decoration: const InputDecoration(
                         labelText: 'Matrícula',
-                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.badge_outlined),
                       ),
                     ),
                   ),
@@ -212,32 +303,64 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
+                child: ElevatedButton.icon(
                   onPressed: registrarEntrada,
-                  child: const Text('Registrar entrada'),
+                  icon: const Icon(Icons.login),
+                  label: const Text('Registrar entrada'),
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Deslize o item para a esquerda para registrar saída ou excluir',
-                style: TextStyle(fontSize: 12),
+              // título da lista
+              Row(
+                children: [
+                  Text(
+                    'Pessoas (${pessoas.length})',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const Spacer(),
+                  const Icon(Icons.swipe_left,
+                      size: 16, color: corTextoSecundario),
+                  const SizedBox(width: 4),
+                  const Text(
+                    'deslize para saída ou excluir',
+                    style: TextStyle(fontSize: 11, color: corTextoSecundario),
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
-              // lista de pessoas
+              // lista de pessoas (ou aviso se ainda não tem ninguém)
               Expanded(
-                child: ListView.builder(
-                  itemCount: pessoas.length,
-                  itemBuilder: (context, index) {
-                    final pessoa = pessoas[index];
-                    // passa a pessoa e as funções pro PessoaItem
-                    return PessoaItem(
-                      key: ObjectKey(pessoa),
-                      pessoa: pessoa,
-                      onSaida: () => registrarSaida(pessoa),
-                      onExcluir: () => excluirPessoa(pessoa),
-                    );
-                  },
-                ),
+                child: pessoas.isEmpty
+                    ? const Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.event_seat,
+                                size: 48, color: corTextoSecundario),
+                            SizedBox(height: 8),
+                            Text(
+                              'Nenhuma pessoa cadastrada ainda',
+                              style: TextStyle(color: corTextoSecundario),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: pessoas.length,
+                        itemBuilder: (context, index) {
+                          final pessoa = pessoas[index];
+                          // passa a pessoa e as funções pro PessoaItem
+                          return PessoaItem(
+                            key: ObjectKey(pessoa),
+                            pessoa: pessoa,
+                            onSaida: () => registrarSaida(pessoa),
+                            onExcluir: () => excluirPessoa(pessoa),
+                          );
+                        },
+                      ),
               ),
             ],
           ),
