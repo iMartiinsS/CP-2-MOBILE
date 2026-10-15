@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 import '../models/pessoa.dart';
 
@@ -26,28 +27,42 @@ class PessoaItem extends StatelessWidget {
       saida = '\nSaída: ${formato.format(pessoa.dataSaida!)}';
     }
 
-    return Card(
-      child: ListTile(
-        title: Text(pessoa.nome),
-        subtitle: Text(
-          'ID: ${pessoa.identificacao}\n'
-          'Entrada: ${formato.format(pessoa.dataEntrada)}'
-          '$saida\n'
-          'Situação: ${pessoa.situacao}',
-        ),
-        isThreeLine: true,
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: onSaida,
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: onExcluir,
-            ),
-          ],
+    // desliza pra esquerda e aparecem as ações SAÍDA e EXCLUIR
+    return Slidable(
+      endActionPane: ActionPane(
+        motion: const DrawerMotion(),
+        children: [
+          SlidableAction(
+            onPressed: (context) {
+              Slidable.of(context)?.close(); // fecha o item deslizado
+              onSaida();
+            },
+            backgroundColor: Colors.orange,
+            foregroundColor: Colors.white,
+            icon: Icons.logout,
+            label: 'SAÍDA',
+          ),
+          SlidableAction(
+            onPressed: (context) {
+              Slidable.of(context)?.close();
+              onExcluir();
+            },
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+            icon: Icons.delete,
+            label: 'EXCLUIR',
+          ),
+        ],
+      ),
+      child: Card(
+        child: ListTile(
+          title: Text(pessoa.nome),
+          subtitle: Text(
+            'ID: ${pessoa.identificacao}\n'
+            'Entrada: ${formato.format(pessoa.dataEntrada)}'
+            '$saida\n'
+            'Situação: ${pessoa.situacao}',
+          ),
         ),
       ),
     );

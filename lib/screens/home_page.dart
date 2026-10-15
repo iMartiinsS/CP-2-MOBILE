@@ -218,6 +218,11 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               const SizedBox(height: 16),
+              const Text(
+                'Deslize o item para a esquerda para registrar saída ou excluir',
+                style: TextStyle(fontSize: 12),
+              ),
+              const SizedBox(height: 8),
               // lista de pessoas
               Expanded(
                 child: ListView.builder(
