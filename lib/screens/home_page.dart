@@ -50,12 +50,14 @@ class _HomePageState extends State<HomePage> {
   void registrarSaida(Pessoa pessoa) {
     setState(() {
       pessoa.dataSaida = DateTime.now();
+      atualizarContador(); // a vaga volta a ficar livre
     });
   }
 
   void excluirPessoa(Pessoa pessoa) {
     setState(() {
       pessoas.remove(pessoa);
+      atualizarContador(); // se ainda estava no ambiente, libera a vaga
     });
   }
 
@@ -82,12 +84,12 @@ class _HomePageState extends State<HomePage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Capacidade máxima: ${cinema.capacidadeMaxima} pessoas',
-                          style: const TextStyle(fontSize: 14),
+                        const Text(
+                          'Pessoas no local',
+                          style: TextStyle(fontSize: 14),
                         ),
                         Text(
-                          'Pessoas no local: ${cinema.pessoas}',
+                          '${cinema.pessoas} / ${cinema.capacidadeMaxima}',
                           style: const TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
                         ),
