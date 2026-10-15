@@ -53,53 +53,95 @@ class _HomePageState extends State<HomePage> {
         title: const Text('Controle de Lotação - Cinema'),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
+        child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              Image.asset(
-                'assets/images/cinema.png',
-                height: 160,
+              // resumo da lotação
+              Row(
+                children: [
+                  Image.asset(
+                    'assets/images/cinema.png',
+                    height: 80,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Capacidade máxima: ${cinema.capacidadeMaxima} pessoas',
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                        Text(
+                          'Pessoas no local: ${cinema.pessoas}',
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          cinema.getMensagem(),
+                          style:
+                              const TextStyle(fontSize: 14, color: Colors.red),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
-              Text(
-                'Capacidade máxima: ${cinema.capacidadeMaxima} pessoas',
-                style: const TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'Pessoas no local',
-                style: TextStyle(fontSize: 18),
-              ),
-              Text(
-                '${cinema.pessoas}',
-                style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                cinema.getMensagem(),
-                style: const TextStyle(fontSize: 18, color: Colors.red),
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: nomeController,
-                decoration: const InputDecoration(
-                  labelText: 'Nome',
-                  border: OutlineInputBorder(),
-                ),
+              const SizedBox(height: 16),
+              // cadastro
+              Row(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: TextField(
+                      controller: nomeController,
+                      decoration: const InputDecoration(
+                        labelText: 'Nome',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 2,
+                    child: TextField(
+                      controller: idController,
+                      decoration: const InputDecoration(
+                        labelText: 'Matrícula',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
-              TextField(
-                controller: idController,
-                decoration: const InputDecoration(
-                  labelText: 'Identificação / matrícula',
-                  border: OutlineInputBorder(),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: registrarEntrada,
+                  child: const Text('Registrar entrada'),
                 ),
               ),
               const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: registrarEntrada,
-                child: const Text('Registrar entrada'),
+              // lista de pessoas
+              Expanded(
+                child: ListView.builder(
+                  itemCount: pessoas.length,
+                  itemBuilder: (context, index) {
+                    final pessoa = pessoas[index];
+                    return Card(
+                      child: ListTile(
+                        title: Text(pessoa.nome),
+                        subtitle: Text(
+                          'ID: ${pessoa.identificacao}\n'
+                          'Entrada: ${pessoa.dataEntrada}',
+                        ),
+                        trailing: Text(pessoa.situacao),
+                      ),
+                    );
+                  },
+                ),
               ),
             ],
           ),
