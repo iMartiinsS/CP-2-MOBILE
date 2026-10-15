@@ -31,10 +31,46 @@ class _HomePageState extends State<HomePage> {
     cinema.pessoas = pessoas.where((p) => p.noAmbiente).length;
   }
 
+  // mostra um SnackBar embaixo da tela
+  void mostrarMensagem(String texto) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(texto)),
+    );
+  }
+
   void registrarEntrada() {
+    final nome = nomeController.text.trim();
+    final identificacao = idController.text.trim();
+
+    // regra 3: nome e ID não podem ficar vazios
+    if (nome.isEmpty || identificacao.isEmpty) {
+      mostrarMensagem('Preencha o nome e a identificação.');
+      return;
+    }
+
+    // regra 1: se estiver lotado, não deixa cadastrar
+    if (cinema.lotado) {
+      mostrarMensagem(
+          'Ambiente lotado! Não é possível registrar uma nova entrada.');
+      return;
+    }
+
+    // regra 4: entendi "simultaneamente" como "ao mesmo tempo no ambiente".
+    // Então só bloqueia se já existe alguém com esse ID que ainda está no
+    // ambiente. Se a pessoa já saiu, o mesmo ID pode entrar de novo.
+    final idJaNoAmbiente = pessoas.any((p) =>
+        p.noAmbiente &&
+        p.identificacao.toLowerCase() == identificacao.toLowerCase());
+    if (idJaNoAmbiente) {
+      mostrarMensagem('Já existe alguém no ambiente com a identificação '
+          '$identificacao.');
+      return;
+    }
+
     final pessoa = Pessoa(
-      nome: nomeController.text,
-      identificacao: idController.text,
+      nome: nome,
+      identificacao: identificacao,
       dataEntrada: DateTime.now(), // data de entrada gerada na hora
     );
 
@@ -48,6 +84,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   void registrarSaida(Pessoa pessoa) {
+    // regra 2: quem já saiu não pode sair de novo
+    if (!pessoa.noAmbiente) {
+      mostrarMensagem('${pessoa.nome} já saiu do ambiente.');
+      return;
+    }
+
     setState(() {
       pessoa.dataSaida = DateTime.now();
       atualizarContador(); // a vaga volta a ficar livre
