@@ -81,26 +81,63 @@ class _HomePageState extends State<HomePage> {
 
     nomeController.clear();
     idController.clear();
+    mostrarMensagem('Entrada de $nome registrada com sucesso!');
   }
 
-  void registrarSaida(Pessoa pessoa) {
+  // abre o AlertDialog e devolve true se a pessoa apertou CONFIRMAR
+  Future<bool> confirmar(String titulo, String mensagem) async {
+    final resposta = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(titulo),
+        content: Text(mensagem),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('CANCELAR'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('CONFIRMAR'),
+          ),
+        ],
+      ),
+    );
+    return resposta == true; // se fechou o dialog sem escolher, vira false
+  }
+
+  Future<void> registrarSaida(Pessoa pessoa) async {
     // regra 2: quem já saiu não pode sair de novo
     if (!pessoa.noAmbiente) {
       mostrarMensagem('${pessoa.nome} já saiu do ambiente.');
       return;
     }
 
+    final confirmou = await confirmar(
+      'Registrar saída',
+      'Confirmar a saída de ${pessoa.nome}?',
+    );
+    if (!confirmou || !mounted) return;
+
     setState(() {
       pessoa.dataSaida = DateTime.now();
       atualizarContador(); // a vaga volta a ficar livre
     });
+    mostrarMensagem('Saída de ${pessoa.nome} registrada.');
   }
 
-  void excluirPessoa(Pessoa pessoa) {
+  Future<void> excluirPessoa(Pessoa pessoa) async {
+    final confirmou = await confirmar(
+      'Excluir pessoa',
+      'Deseja excluir ${pessoa.nome} da lista?',
+    );
+    if (!confirmou || !mounted) return;
+
     setState(() {
       pessoas.remove(pessoa);
       atualizarContador(); // se ainda estava no ambiente, libera a vaga
     });
+    mostrarMensagem('${pessoa.nome} foi excluído(a) da lista.');
   }
 
   @override
